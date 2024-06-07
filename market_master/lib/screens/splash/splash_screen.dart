@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:market_master/service/home/home_Screen.dart';
+import 'package:market_master/screens/home/home_Screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -14,7 +14,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    Timer(const Duration(seconds: 5), () {
+    Timer(const Duration(seconds: 2), () {
       Navigator.push(
         context,
         MaterialPageRoute(builder: (context) => const HomeScreen()),
@@ -30,21 +30,29 @@ class _SplashScreenState extends State<SplashScreen> {
           Container(
             decoration: const BoxDecoration(
               image: DecorationImage(
-                image: NetworkImage(
-                    'https://w7.pngwing.com/pngs/686/527/png-transparent-fast-food-hamburger-sushi-pizza-fast-food-food-breakfast-fast-food-restaurant-thumbnail.png'),
+                image: AssetImage('lib/assets/background.png'),
                 fit: BoxFit.cover,
               ),
             ),
+            child: Container(
+              decoration: BoxDecoration(color: Colors.black.withOpacity(0.85)),
+            ),
           ),
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.black.withOpacity(0.9),
-                  const Color.fromARGB(255, 34, 189, 42).withOpacity(0.7),
-                ],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+          Padding(
+            padding: const EdgeInsets.only(top: 300),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF102d16).withOpacity(0.4),
+                    const Color(0xFF1b4e26).withOpacity(0.36),
+                    const Color(0xFF1a4b24).withOpacity(0.33),
+                    const Color(0xFF008e06).withOpacity(0.58),
+                  ],
+                  stops: const [0.0, 0.17, 0.39, 0.88],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                ),
               ),
             ),
           ),
@@ -53,24 +61,17 @@ class _SplashScreenState extends State<SplashScreen> {
             children: [
               Center(
                 child: Padding(
-                  padding: EdgeInsets.only(top: 300.0),
+                  padding: EdgeInsets.only(top: 200.0),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.fastfood, size: 100),
-                      Padding(
-                        padding: EdgeInsets.only(right: 60, top: 20),
-                        child: Text(
-                          'Market ',
-                          style: TextStyle(fontSize: 30, color: Colors.white),
-                        ),
+                      Image(
+                        image: AssetImage('lib/assets/logo.png'),
+                        fit: BoxFit.cover,
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 60),
-                        child: Text(
-                          ' Master',
-                          style: TextStyle(fontSize: 30, color: Colors.white),
-                        ),
+                      Image(
+                        image: AssetImage('lib/assets/Name.png'),
+                        fit: BoxFit.cover,
                       ),
                     ],
                   ),
@@ -80,14 +81,13 @@ class _SplashScreenState extends State<SplashScreen> {
                 padding: EdgeInsets.only(bottom: 20.0),
                 child: Column(
                   children: [
-                    Divider(),
                     SizedBox(height: 5),
                     Text('© 2024 All rights reserved',
                         style: TextStyle(fontSize: 14, color: Colors.white)),
                     Text('Developed by Flutter Developer Com22',
                         style: TextStyle(fontSize: 14, color: Colors.white)),
-                    SizedBox(height: 5),
-                    Text('Privacy Policy| Terms of Service| Contact Us',
+                    SizedBox(height: 15),
+                    Text('Privacy Policy | Terms of Service | Contact Us',
                         style: TextStyle(fontSize: 14, color: Colors.white)),
                     Text('Follw us on Facebook Instergram Twitter',
                         style: TextStyle(fontSize: 14, color: Colors.white)),
