@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "558361087681",
+    "project_id": "market-master-abc",
+    "storage_bucket": "market-master-abc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:558361087681:android:8c4d66a4e806b641cece40",
+        "android_client_info": {
+          "package_name": "com.example.market_master"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAtCAe5dDTLhRvX1UI1kxqtNlu9fondf8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

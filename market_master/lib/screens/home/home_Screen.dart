@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:market_master/component/bottom_nav_bar.dart';
@@ -7,7 +6,6 @@ import 'package:market_master/component/drawer.dart';
 import 'package:market_master/component/home_shop_filter_buttons.dart';
 import 'package:market_master/component/home_topics.dart';
 import 'package:market_master/component/message_box_button.dart';
-import 'package:market_master/screens/chatScreen/chatScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -73,6 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -110,153 +109,148 @@ class _HomeScreenState extends State<HomeScreen> {
         backgroundColor: const Color(0xFFC8E3C7), // Custom background color
       ),
       backgroundColor: const Color(0xFFE1EEDE),
-      body: Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Column(
-          children: [
-            const Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                "Hey, Alina",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
-              ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const CustomDivider(),
-            const SizedBox(
-              height: 10,
-            ),
-            Container(
-              width: 365,
-              height: 152,
-              decoration: const BoxDecoration(
-                image: DecorationImage(
-                    image: AssetImage('lib/assets/containerBackground.png'),
-                    fit: BoxFit.cover),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.only(left: 60),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Find your Store to buy",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                    ),
-                    Text(
-                      " everything!",
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
-                    ),
-                  ],
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(15.0),
+          child: Column(
+            children: [
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  "Hey, Alina",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.w500),
                 ),
               ),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const CustomDivider(),
-            const SizedBox(
-              height: 10,
-            ),
-            CustomHomeTopics(
-              title: "Categories",
-              fontSize: 20,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            FilterButtons(ctegoryList: ctegoryList),
-            const SizedBox(
-              height: 10,
-            ),
-            const CustomDivider(),
-            const SizedBox(
-              height: 10,
-            ),
-            CustomHomeTopics(
-              title: "Shops",
-              fontSize: 20,
-            ),
-            SingleChildScrollView(
-              child: SizedBox(
-                height: 300, // Set a specific height for the horizontal list
-                child: ListView.builder(
-                  itemCount: shopList.length,
-                  itemBuilder: (context, index) {
-                    return Column(
-                      children: [
-                        Container(
-                          width: double.infinity, // Adjust the width as needed
-                          margin: const EdgeInsets.symmetric(
-                              vertical:
-                                  10), // Add horizontal margin to create space
-                          child: GestureDetector(
-                            onTap: () {
-                              print('clicked ${ctegoryList[index]}');
-                            },
-                            child: Card(
-                                color: const Color(0xFFC8E3C7),
-                                child: ListTile(
-                                  leading: const Image(
-                                    image:
-                                        AssetImage('lib/assets/shopImage.png'),
-                                    fit: BoxFit.fitHeight,
-                                  ),
-                                  title: Text(
-                                    shopList[index],
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                  subtitle: Text(
-                                    ctegoryList[
-                                        index], //TODO: Add category name from db
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w400),
-                                  ),
-                                  trailing: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        RatingBarIndicator(
-                                          rating: categoryList[index]['rating'],
-                                          itemBuilder: (context, index) =>
-                                              const Icon(
-                                            Icons.star,
-                                            color: Colors.amber,
-                                          ),
-                                          itemCount: 5,
-                                          itemSize: 20.0,
-                                          direction: Axis.horizontal,
+              const SizedBox(
+                height: 10,
+              ),
+              const CustomDivider(),
+              const SizedBox(
+                height: 10,
+              ),
+              Container(
+                width: 365,
+                height: 152,
+                decoration: const BoxDecoration(
+                  image: DecorationImage(
+                      image: AssetImage('lib/assets/containerBackground.png'),
+                      fit: BoxFit.cover),
+                ),
+                child: const Padding(
+                  padding: EdgeInsets.only(left: 60),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Find your Store to buy",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w500),
+                      ),
+                      Text(
+                        " everything!",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.w500),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              const CustomDivider(),
+              const SizedBox(
+                height: 10,
+              ),
+              CustomHomeTopics(
+                title: "Categories",
+                fontSize: 20,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              FilterButtons(ctegoryList: ctegoryList),
+              const SizedBox(
+                height: 10,
+              ),
+              const CustomDivider(),
+              const SizedBox(
+                height: 10,
+              ),
+              CustomHomeTopics(
+                title: "Shops",
+                fontSize: 20,
+              ),
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: shopList.length,
+                itemBuilder: (context, index) {
+                  return Column(
+                    children: [
+                      Container(
+                        width: double.infinity, // Adjust the width as needed
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 10), // Add horizontal margin to create space
+                        child: GestureDetector(
+                          onTap: () {
+                            print('clicked ${ctegoryList[index]}');
+                          },
+                          child: Card(
+                              color: const Color(0xFFC8E3C7),
+                              child: ListTile(
+                                leading: const Image(
+                                  image: AssetImage('lib/assets/shopImage.png'),
+                                  fit: BoxFit.fitHeight,
+                                ),
+                                title: Text(
+                                  shopList[index],
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                subtitle: Text(
+                                  ctegoryList[index], //TODO: Add category name from db
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w400),
+                                ),
+                                trailing: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
+                                      RatingBarIndicator(
+                                        rating: categoryList[index]['rating'],
+                                        itemBuilder: (context, index) =>
+                                            const Icon(
+                                          Icons.star,
+                                          color: Colors.amber,
                                         ),
-                                        Text(
-                                          categoryList[index]['rating']
-                                              .toString(),
-                                          style: const TextStyle(fontSize: 12),
-                                        ),
-                                      ]),
-                                )),
-                          ),
+                                        itemCount: 5,
+                                        itemSize: 20.0,
+                                        direction: Axis.horizontal,
+                                      ),
+                                      Text(
+                                        categoryList[index]['rating']
+                                            .toString(),
+                                        style: const TextStyle(fontSize: 12),
+                                      ),
+                                    ]),
+                              )),
                         ),
-                      ],
-                    );
-                  },
-                ),
+                      ),
+                    ],
+                  );
+                },
               ),
-            ),
-            ElevatedButton(
-              onPressed: _showRatingDialog,
-              child: const Text('Rate Seller'),
-            ),
-            const BottomNavBar()
-          ],
+              ElevatedButton(
+                onPressed: _showRatingDialog,
+                child: const Text('Rate Seller'),
+              ),
+            ],
+          ),
         ),
       ),
-      floatingActionButton: MessageBoxButton(),
+      floatingActionButton: const MessageBoxButton(),
     );
   }
 }
