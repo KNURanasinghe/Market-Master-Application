@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:market_master/component/background/background_with_app_bar.dart';
 
 class SellerHomeScreen extends StatefulWidget {
   const SellerHomeScreen({super.key});
@@ -8,12 +9,13 @@ class SellerHomeScreen extends StatefulWidget {
 }
 
 class _SellerHomeScreenState extends State<SellerHomeScreen> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Column(
-        children: [Center(child: Text("data"))],
-      ),
+    return BodyWithAppBar(
+      title: 'Seller Home',
+      scaffoldKey: _scaffoldKey,
+      widget: const Column(),
     );
   }
 }
