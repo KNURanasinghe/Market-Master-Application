@@ -65,9 +65,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     //   // Here you can handle the submission (e.g., send the data to your backend)
     // }
     Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const LoginScreen()),
-      );
+      context,
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+    );
   }
 
   void _showTermsAndConditions() {
@@ -108,7 +108,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     );
   }
 
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -126,7 +125,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 child: Column(
                   children: [
-                    const Image(image: AssetImage('lib/assets/loginvector.png')),
+                    const Image(
+                        image: AssetImage('lib/assets/loginvector.png')),
                     const SizedBox(
                       height: 10,
                     ),
@@ -197,7 +197,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             const SizedBox(
                               height: 10,
                             ),
-      
+
                             ///farmer details start from here
                             FormFiledHeaders(
                               widget: Row(
@@ -226,7 +226,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ],
                               ),
                             ),
-      
+
                             Visibility(
                               visible: _isFarmer,
                               child: Form(
@@ -276,6 +276,32 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       },
                                       controller: _nicNoController,
                                     ),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 8.0),
+                                      child: ElevatedButton(
+                                        onPressed: _pickImage,
+                                        child: const Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Icon(Icons.cloud_upload_rounded),
+                                            SizedBox(
+                                              width: 10,
+                                            ),
+                                            Text('Upload NIC Image'),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    if (_imageFile != null)
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 8.0,
+                                        ),
+                                        child:
+                                            Image.file(File(_imageFile!.path)),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -283,7 +309,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                             const SizedBox(
                               height: 10,
                             ),
-      
+
                             ///seller details start from here
                             FormFiledHeaders(
                               widget: Row(
@@ -363,8 +389,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     width: 10,
                                   ),
                                   Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 8.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
                                     child: Container(
                                       decoration: BoxDecoration(
                                         gradient: const LinearGradient(
@@ -375,7 +401,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                             Color(0xFF3DBD42), // No opacity
                                           ],
                                         ),
-                                        borderRadius: BorderRadius.circular(8.0),
+                                        borderRadius:
+                                            BorderRadius.circular(8.0),
                                       ),
                                       child: DropdownButtonFormField<String>(
                                         decoration: InputDecoration(
@@ -405,8 +432,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     ),
                                   ),
                                   Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 8.0),
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
                                     child: ElevatedButton(
                                       onPressed: _pickImage,
                                       child: const Row(
@@ -417,7 +444,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           SizedBox(
                                             width: 10,
                                           ),
-                                          Text('Upload NIC Image'),
+                                          Text('BR NOC Image'),
                                         ],
                                       ),
                                     ),
@@ -502,13 +529,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   color: Color(0xFF736E6E),
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,
-                                   decoration: TextDecoration.underline),
+                                  decoration: TextDecoration.underline),
                             ),
                           ),
                         ],
                       ),
                     ),
-                  
                   ],
                 ),
               )
