@@ -6,15 +6,15 @@
                 if (err) {
                     return callback(err);
                 }
-    
+        
                 connection.beginTransaction(err => {
                     if (err) {
                         connection.release();
                         return callback(err);
                     }
-    
-                    const { username, email, password, roles, additionalData } = data;
-    
+        
+                    const { username, email, password, roles = [], additionalData } = data; // Ensure roles is initialized as an array
+        
                     // Check if email already exists
                     connection.query(
                         `SELECT id FROM users WHERE email = ?`,
@@ -24,12 +24,12 @@
                                 connection.release();
                                 return callback(error);
                             }
-    
+        
                             if (results.length > 0) {
                                 connection.release();
                                 return callback(new Error('Email already exists'));
                             }
-    
+        
                             // Proceed with inserting the user
                             connection.query(
                                 `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`,
@@ -41,9 +41,9 @@
                                             return callback(error);
                                         });
                                     }
-    
+        
                                     const userId = results.insertId;
-    
+        
                                     const roleQueries = roles.map(role => {
                                         return new Promise((resolve, reject) => {
                                             connection.query(
@@ -68,66 +68,87 @@
                                             );
                                         });
                                     });
-    
+        
                                     Promise.all(roleQueries)
                                         .then(() => {
-                                            const farmerData = roles.includes('farmer') ? [
-                                                userId,
-                                                additionalData.homeAddress,
-                                                additionalData.contactNumber,
-                                                additionalData.nicNo,
-                                                additionalData.nicImage
-                                            ] : null;
-    
-                                            const sellerData = roles.includes('seller') ? [
-                                                userId,
-                                                additionalData.shopName,
-                                                additionalData.shopAddress,
-                                                additionalData.shopRegNo,
-                                                additionalData.typeOfGoods,
-                                                additionalData.brImage
-                                            ] : null;
-    
-                                            const farmerQuery = farmerData ? new Promise((resolve, reject) => {
-                                                connection.query(
-                                                    `INSERT INTO farmers (user_id, home_address, contact_number, nic_no, nic_image) VALUES (?, ?, ?, ?, ?)`,
-                                                    farmerData,
-                                                    (error, results) => {
-                                                        if (error) return reject(error);
-                                                        resolve();
-                                                    }
-                                                );
-                                            }) : Promise.resolve();
-    
-                                            const sellerQuery = sellerData ? new Promise((resolve, reject) => {
-                                                connection.query(
-                                                    `INSERT INTO sellers (user_id, shop_name, shop_address, shop_reg_no, type_of_goods, br_image) VALUES (?, ?, ?, ?, ?, ?)`,
-                                                    sellerData,
-                                                    (error, results) => {
-                                                        if (error) return reject(error);
-                                                        resolve();
-                                                    }
-                                                );
-                                            }) : Promise.resolve();
-    
-                                            return Promise.all([farmerQuery, sellerQuery]);
+                                            // Handle additional data based on roles
+                                            const queries = [];
+        
+                                            if (roles.includes('common')) {
+                                                const customerData = [
+                                                    userId
+                                                ];
+                                                queries.push(new Promise((resolve, reject) => {
+                                                    connection.query(
+                                                        `INSERT INTO customers (user_id) VALUES (?)`,
+                                                        customerData,
+                                                        (error, results) => {
+                                                            if (error) return reject(error);
+                                                            resolve();
+                                                        }
+                                                    );
+                                                }));
+                                            }
+        
+                                            if (roles.includes('farmer')) {
+                                                const farmerData = [
+                                                    userId,
+                                                    additionalData.homeAddress,
+                                                    additionalData.contactNumber,
+                                                    additionalData.nicNo,
+                                                    additionalData.nicImage
+                                                ];
+                                                queries.push(new Promise((resolve, reject) => {
+                                                    connection.query(
+                                                        `INSERT INTO farmers (user_id, home_address, contact_number, nic_no, nic_image) VALUES (?, ?, ?, ?, ?)`,
+                                                        farmerData,
+                                                        (error, results) => {
+                                                            if (error) return reject(error);
+                                                            resolve();
+                                                        }
+                                                    );
+                                                }));
+                                            }
+        
+                                            if (roles.includes('seller')) {
+                                                const sellerData = [
+                                                    userId,
+                                                    additionalData.shopName,
+                                                    additionalData.shopAddress,
+                                                    additionalData.shopRegNo,
+                                                    additionalData.typeOfGoods,
+                                                    additionalData.brImage
+                                                ];
+                                                queries.push(new Promise((resolve, reject) => {
+                                                    connection.query(
+                                                        `INSERT INTO sellers (user_id, shop_name, shop_address, shop_reg_no, type_of_goods, br_image) VALUES (?, ?, ?, ?, ?, ?)`,
+                                                        sellerData,
+                                                        (error, results) => {
+                                                            if (error) return reject(error);
+                                                            resolve();
+                                                        }
+                                                    );
+                                                }));
+                                            }
+        
+                                            return Promise.all(queries);
                                         })
                                         .then(() => {
                                             connection.commit(err => {
                                                 if (err) {
                                                     return connection.rollback(() => {
                                                         connection.release();
-                                                        return callback(err);
+                                                        callback(err);
                                                     });
                                                 }
                                                 connection.release();
-                                                return callback(null, { message: 'User registered successfully' });
+                                                callback(null, { message: 'User registered successfully' });
                                             });
                                         })
                                         .catch(error => {
                                             return connection.rollback(() => {
                                                 connection.release();
-                                                return callback(error);
+                                                callback(error);
                                             });
                                         });
                                 }
@@ -137,12 +158,13 @@
                 });
             });
         },
+        
         getUsers: (callback) => {
             const query = `
                 SELECT u.id, u.name, u.email, u.password, 
-                       GROUP_CONCAT(DISTINCT r.role_name SEPARATOR ', ') as roles,
-                       f.home_address, f.contact_number, f.nic_no, f.nic_image,
-                       s.shop_name, s.shop_address, s.shop_reg_no, s.type_of_goods, s.br_image
+                GROUP_CONCAT(DISTINCT r.role_name SEPARATOR ', ') as roles,
+                f.home_address, f.contact_number, f.nic_no, f.nic_image,
+                s.shop_name, s.shop_address, s.shop_reg_no, s.type_of_goods, s.br_image
                 FROM users u
                 LEFT JOIN user_roles ur ON u.id = ur.user_id
                 LEFT JOIN roles r ON ur.role_id = r.id
@@ -164,9 +186,9 @@
         getUserByUserId: (id, callback) => {
             const query = `
                 SELECT u.id, u.name, u.email, u.password, 
-                       GROUP_CONCAT(DISTINCT r.role_name SEPARATOR ', ') as roles,
-                       f.home_address, f.contact_number, f.nic_no, f.nic_image,
-                       s.shop_name, s.shop_address, s.shop_reg_no, s.type_of_goods, s.br_image
+                GROUP_CONCAT(DISTINCT r.role_name SEPARATOR ', ') as roles,
+                f.home_address, f.contact_number, f.nic_no, f.nic_image,
+                s.shop_name, s.shop_address, s.shop_reg_no, s.type_of_goods, s.br_image
                 FROM users u
                 LEFT JOIN user_roles ur ON u.id = ur.user_id
                 LEFT JOIN roles r ON ur.role_id = r.id
@@ -399,7 +421,6 @@
             });
         },
         
-        
         getUserByEmail: (email, callback) => {
             pool.query(
                 `select * from users where email = ?`,
@@ -413,5 +434,6 @@
             );
         },
         
+
         
     };

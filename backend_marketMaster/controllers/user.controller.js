@@ -6,23 +6,8 @@ const { sign } = require('jsonwebtoken');
 module.exports = {
     createUser: (req, res) => {
         const body = req.body;
-
-        userService.getUserByEmail(body.email, (err, existingUser) => {
-            if (err) {
-                console.log(err);
-                return res.status(500).json({
-                    success: 0,
-                    message: "Database connection error"
-                });
-            }
-
-            if (existingUser) {
-                return res.status(400).json({
-                    success: 0,
-                    message: "Email already exists"
-                });
-            }
-
+    
+            
             const salt = genSaltSync(10);
             body.password = hashSync(body.password, salt);
             userService.create(body, (err, results) => {
@@ -44,13 +29,13 @@ module.exports = {
                     data: results
                 });
             });
-        });
-    },
+},
+
     getUserByUserId: (req, res) => {
         const id = req.params.id;
         userService.getUserByUserId(id, (err, user) => {
             if (err) {
-                console.log(err);
+                console.error(err);
                 return res.status(500).json({
                     success: 0,
                     message: "Database error"
@@ -68,6 +53,7 @@ module.exports = {
             });
         });
     },
+    
     
     getUsers: (req, res) => {
         userService.getUsers((err, results) => {
