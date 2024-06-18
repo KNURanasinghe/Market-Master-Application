@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:market_master/component/customized_divider.dart';
 import 'package:market_master/component/drawer/drawer.dart';
-import 'package:market_master/component/home_shop_filter_buttons.dart';
 import 'package:market_master/component/home_topics.dart';
 import 'package:market_master/component/message_box_button.dart';
 import 'package:market_master/controller/providers/auth_provider.dart';
@@ -20,6 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _isLoading = false;
   List<dynamic> _users = [];
   late String _currentUserName = '';
+  String _selectedCategory = 'All';
 
   @override
   void initState() {
@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _fetchCurrentUser();
   }
 
-  Future<void> _fetchUsers() async {
+  Future<void> _fetchUsers({String? typeOfGoods}) async {
     setState(() {
       _isLoading = true;
     });
@@ -37,7 +37,13 @@ class _HomeScreenState extends State<HomeScreen> {
       final users =
           await Provider.of<AuthProvider>(context, listen: false).getAllUsers();
       setState(() {
-        _users = users;
+        if (typeOfGoods != null && typeOfGoods.isNotEmpty) {
+          _users = users
+              .where((user) => user['type_of_goods'] == typeOfGoods)
+              .toList();
+        } else {
+          _users = users;
+        }
       });
     } catch (error) {
       // Handle error here, e.g., show a dialog
@@ -53,10 +59,9 @@ class _HomeScreenState extends State<HomeScreen> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString('token') ?? '';
-      print('Token in _fetchCurrentUser: $token'); // Debug print
+
       final userId = Provider.of<AuthProvider>(context, listen: false)
           .getUserIdFromToken(token);
-      print('User ID in _fetchCurrentUser: $userId'); // Debug print
 
       if (userId.isNotEmpty) {
         final user = await Provider.of<AuthProvider>(context, listen: false)
@@ -64,14 +69,27 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           _currentUserName =
               user['name'] ?? ''; // Fallback to empty string if 'name' is null
-          print('Current User Name: $_currentUserName'); // Debug print
         });
       } else {
         print('User ID is empty');
       }
     } catch (error) {
-      print('Error fetching current user: $error');
       // Handle error, e.g., show a dialog
+      showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('An error occurred!'),
+          content: Text(error.toString()),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Okay'),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+              },
+            ),
+          ],
+        ),
+      );
     }
   }
 
@@ -117,6 +135,18 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  void _selectCategory(String category) {
+    setState(() {
+      _selectedCategory = category;
+    });
+    // Fetch users based on selected category
+    if (category == 'All') {
+      _fetchUsers();
+    } else {
+      _fetchUsers(typeOfGoods: category);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -225,11 +255,47 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(
                         height: 10,
                       ),
-                      const FilterButtons(ctegoryList: [
-                        'Fruits',
-                        'Vegetables',
-                        'All'
-                      ]), // Update with your dynamic categories
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          ElevatedButton(
+                            onPressed: () {
+                              _selectCategory('All');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _selectedCategory == 'All'
+                                  ? Colors.green
+                                  : Colors.grey,
+                              fixedSize: const Size(110, 40),
+                            ),
+                            child: const Text('All'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              _selectCategory('Fruits');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _selectedCategory == 'Fruits'
+                                  ? Colors.green
+                                  : Colors.grey,
+                              fixedSize: const Size(110, 40),
+                            ),
+                            child: const Text('Fruits'),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              _selectCategory('Vegetables');
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: _selectedCategory == 'Vegetables'
+                                  ? Colors.green
+                                  : Colors.grey,
+                              fixedSize: const Size(110, 40),
+                            ),
+                            child: const Text('Vegetables'),
+                          ),
+                        ],
+                      ), // Update with your dynamic categories
                       const SizedBox(
                         height: 10,
                       ),
