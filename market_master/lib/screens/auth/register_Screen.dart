@@ -52,13 +52,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _submit() async {
-    
-
-
     List<String> roles = ['common'];
     if (_isFarmer) roles.add('farmer');
     if (_isSeller) roles.add('seller');
- 
+
     Map<String, dynamic> userData = {
       'name': _nameController.text, // Assuming username is same as name
       'email': _emailController.text,
@@ -88,7 +85,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
     final responseData = await Provider.of<AuthProvider>(context, listen: false)
         .signup(userData);
-
 
     if (responseData['success'] == 1) {
       Navigator.of(context).pushReplacement(
@@ -339,6 +335,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ],
                                     ),
                                   ),
+                                  const SizedBox(height: 10),
 
                                   /// Seller information
                                   FormFiledHeaders(
@@ -514,9 +511,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                           child: const Text(
                                             'I agree to terms and conditions',
                                             style: TextStyle(
-                                              fontSize: 16,
+                                              fontSize: 18,
                                               fontWeight: FontWeight.bold,
-                                              color: Colors.blue,
+                                              color: Colors.black,
                                               decoration:
                                                   TextDecoration.underline,
                                             ),
@@ -525,43 +522,44 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                       ],
                                     ),
                                   ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16.0),
-                                    child: ElevatedButton(
-                                      onPressed: _isTerms ? _submit : null,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: _isTerms
-                                            ? const Color(0xFF3DBD42)
-                                            : Colors.grey.shade400,
-                                      ),
-                                      child: Text(
-                                        'Sign In',
-                                        style: TextStyle(
-                                            color: Colors.grey.shade200),
-                                      ),
-                                    ),
-                                  ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 10),
                           ],
                         ),
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const LoginScreen()),
-                        );
-                      },
-                      child: const Text('Already have an account? Login'),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: ElevatedButton(
+                        onPressed: _isTerms ? _submit : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _isTerms
+                              ? const Color(0xFF3DBD42)
+                              : Colors.grey.shade400,
+                        ),
+                        child: Text(
+                          'Sign In',
+                          style: TextStyle(color: Colors.grey.shade200),
+                        ),
+                      ),
                     ),
-                    const SizedBox(height: 10),
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: TextButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => const LoginScreen()),
+                          );
+                        },
+                        child: const Text(
+                          'Already have an account? Login',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

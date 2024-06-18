@@ -32,11 +32,11 @@ class _LoginScreenState extends State<LoginScreen> {
       'password': _passwordController.text,
     };
     try {
-      print(userData);
       final responseData =
           await Provider.of<AuthProvider>(context, listen: false)
               .login(userData);
       print(responseData['message']);
+
       Navigator.pushReplacement(context,
           MaterialPageRoute(builder: (context) => const BottomNavBar()));
 
