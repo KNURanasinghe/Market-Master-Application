@@ -1,4 +1,3 @@
-// auth_provider.dart
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -6,77 +5,69 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthProvider with ChangeNotifier {
-  String? _token;
-  String? _userId;
-  DateTime? _expiryDate;
+  String _token = '';
+  bool get isAuth => _token.isNotEmpty;
 
-  bool get isAuth {
-    return _token != null;
-  }
+  Future<Map<String, dynamic>> signup(Map<String, dynamic> userData) async {
+    final url = Uri.parse(
+        'http://192.168.8.159:3000/api/users'); // Replace with your backend URL
 
-  Future<void> signup(String username, String email, String password,
-      List<String> roles, Map<String, String> additionalData) async {
-    final url = Uri.parse('http://localhost:3000/api/users');
-    final response = await http.post(
-      url,
-      body: json.encode({
-        'name': username,
-        'email': email,
-        'password': password,
-        'roles': roles,
-        'additionalData': additionalData,
-      }),
-      headers: {'Content-Type': 'application/json'},
-    );
-    final responseData = json.decode(response.body);
-    if (response.statusCode == 200) {
-      _token = responseData['token'];
-      _userId = responseData['userId'];
-      _expiryDate = DateTime.now().add(
-        Duration(seconds: int.parse(responseData['expiresIn'])),
+    try {
+      final response = await http.post(
+        url,
+        body: json.encode(userData),
+        headers: {'Content-Type': 'application/json'},
       );
-      notifyListeners();
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString('token', _token!);
-    } else {
-      throw Exception(responseData['error']);
+      final responseData = json.decode(response.body);
+      if (response.statusCode == 200) {
+        notifyListeners();
+        return responseData;
+      }
+      return {"message": responseData['message']};
+    } catch (error) {
+      rethrow;
     }
   }
 
-  Future<void> login(String email, String password) async {
-    final url = Uri.parse('http://localhost:3000/api/users/login');
-    final response = await http.post(
-      url,
-      body: json.encode({
-        'email': email,
-        'password': password,
-      }),
-      headers: {'Content-Type': 'application/json'},
-    );
-    final responseData = json.decode(response.body);
-    if (response.statusCode == 200) {
-      _token = responseData['token'];
-      _userId = responseData['userId'];
-      _expiryDate = DateTime.now().add(
-        Duration(seconds: int.parse(responseData['expiresIn'])),
+  Future<Map<String, dynamic>> login(Map<String, dynamic> userData) async {
+    final url = Uri.parse(
+        'http://192.168.8.159:3000/api/users/login'); // Replace with your backend URL
+
+    try {
+      final response = await http.post(
+        url,
+        body: json.encode(userData),
+        headers: {'Content-Type': 'application/json'},
       );
-      notifyListeners();
-      final prefs = await SharedPreferences.getInstance();
-      prefs.setString('token', _token!);
-    } else {
-      throw Exception(responseData['error']);
+      final responseData = json.decode(response.body);
+      if (response.statusCode == 200) {
+        _token = responseData['token'];
+        print(_token);
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('token', _token);
+        notifyListeners();
+        return responseData;
+      } else {
+        return {"message": responseData['message']};
+      }
+    } catch (error) {
+      rethrow;
     }
-    await Future.delayed(const Duration(seconds: 2));
-    // If the signup fails, throw an error
-    throw Exception('Signup failed');
   }
 
   Future<void> logout() async {
-    _token = null;
-    _userId = null;
-    _expiryDate = null;
-    notifyListeners();
+    _token = '';
     final prefs = await SharedPreferences.getInstance();
-    prefs.remove('token');
+    await prefs.remove('token');
+    notifyListeners();
+  }
+
+  Future<void> tryAutoLogin() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (!prefs.containsKey('token')) {
+      return;
+    }
+    _token = prefs.getString('token') ?? '';
+    notifyListeners();
   }
 }

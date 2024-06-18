@@ -1,164 +1,172 @@
     const pool = require("../config/db");
 
     module.exports = {
-        create: (data, callback) => {
-            pool.getConnection((err, connection) => {
-                if (err) {
-                    return callback(err);
+      create: (data, callback) => {
+        pool.getConnection((err, connection) => {
+          if (err) {
+            return callback(err);
+          }
+      
+          connection.beginTransaction(err => {
+            if (err) {
+              connection.release();
+              return callback(err);
+            }
+      
+            const { name, email, password, roles = [], additionalData } = data; // Changed username to name
+      
+            // Check if email already exists
+            connection.query(
+              `SELECT id FROM users WHERE email = ?`,
+              [email],
+              (error, results) => {
+                if (error) {
+                  connection.release();
+                  return callback(error);
                 }
-        
-                connection.beginTransaction(err => {
-                    if (err) {
+      
+                if (results.length > 0) {
+                  connection.release();
+                  return callback(new Error('Email already exists'));
+                }
+      
+                // Proceed with inserting the user
+                connection.query(
+                  `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`,
+                  [name, email, password], // Changed username to name
+                  (error, results) => {
+                    if (error) {
+                      return connection.rollback(() => {
                         connection.release();
-                        return callback(err);
+                        return callback(error);
+                      });
                     }
-        
-                    const { username, email, password, roles = [], additionalData } = data; // Ensure roles is initialized as an array
-        
-                    // Check if email already exists
-                    connection.query(
-                        `SELECT id FROM users WHERE email = ?`,
-                        [email],
-                        (error, results) => {
-                            if (error) {
-                                connection.release();
-                                return callback(error);
-                            }
-        
+      
+                    const userId = results.insertId;
+      
+                    const roleQueries = roles.map(role => {
+                      return new Promise((resolve, reject) => {
+                        connection.query(
+                          `SELECT id FROM roles WHERE role_name = ?`,
+                          [role],
+                          (error, results) => {
+                            if (error) return reject(error);
                             if (results.length > 0) {
-                                connection.release();
-                                return callback(new Error('Email already exists'));
-                            }
-        
-                            // Proceed with inserting the user
-                            connection.query(
-                                `INSERT INTO users (name, email, password) VALUES (?, ?, ?)`,
-                                [username, email, password],
+                              const roleId = results[0].id;
+                              connection.query(
+                                `INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)`,
+                                [userId, roleId],
                                 (error, results) => {
-                                    if (error) {
-                                        return connection.rollback(() => {
-                                            connection.release();
-                                            return callback(error);
-                                        });
-                                    }
-        
-                                    const userId = results.insertId;
-        
-                                    const roleQueries = roles.map(role => {
-                                        return new Promise((resolve, reject) => {
-                                            connection.query(
-                                                `SELECT id FROM roles WHERE role_name = ?`,
-                                                [role],
-                                                (error, results) => {
-                                                    if (error) return reject(error);
-                                                    if (results.length > 0) {
-                                                        connection.query(
-                                                            `INSERT INTO user_roles (user_id, role_id) VALUES (?, ?)`,
-                                                            [userId, results[0].id],
-                                                            (error, results) => {
-                                                                if (error) return reject(error);
-                                                                resolve();
-                                                            }
-                                                        );
-                                                    } else {
-                                                        console.error(`Role '${role}' not found in the database`);
-                                                        reject(new Error('Role not found'));
-                                                    }
-                                                }
-                                            );
-                                        });
-                                    });
-        
-                                    Promise.all(roleQueries)
-                                        .then(() => {
-                                            // Handle additional data based on roles
-                                            const queries = [];
-        
-                                            if (roles.includes('common')) {
-                                                const customerData = [
-                                                    userId
-                                                ];
-                                                queries.push(new Promise((resolve, reject) => {
-                                                    connection.query(
-                                                        `INSERT INTO customers (user_id) VALUES (?)`,
-                                                        customerData,
-                                                        (error, results) => {
-                                                            if (error) return reject(error);
-                                                            resolve();
-                                                        }
-                                                    );
-                                                }));
-                                            }
-        
-                                            if (roles.includes('farmer')) {
-                                                const farmerData = [
-                                                    userId,
-                                                    additionalData.homeAddress,
-                                                    additionalData.contactNumber,
-                                                    additionalData.nicNo,
-                                                    additionalData.nicImage
-                                                ];
-                                                queries.push(new Promise((resolve, reject) => {
-                                                    connection.query(
-                                                        `INSERT INTO farmers (user_id, home_address, contact_number, nic_no, nic_image) VALUES (?, ?, ?, ?, ?)`,
-                                                        farmerData,
-                                                        (error, results) => {
-                                                            if (error) return reject(error);
-                                                            resolve();
-                                                        }
-                                                    );
-                                                }));
-                                            }
-        
-                                            if (roles.includes('seller')) {
-                                                const sellerData = [
-                                                    userId,
-                                                    additionalData.shopName,
-                                                    additionalData.shopAddress,
-                                                    additionalData.shopRegNo,
-                                                    additionalData.typeOfGoods,
-                                                    additionalData.brImage
-                                                ];
-                                                queries.push(new Promise((resolve, reject) => {
-                                                    connection.query(
-                                                        `INSERT INTO sellers (user_id, shop_name, shop_address, shop_reg_no, type_of_goods, br_image) VALUES (?, ?, ?, ?, ?, ?)`,
-                                                        sellerData,
-                                                        (error, results) => {
-                                                            if (error) return reject(error);
-                                                            resolve();
-                                                        }
-                                                    );
-                                                }));
-                                            }
-        
-                                            return Promise.all(queries);
-                                        })
-                                        .then(() => {
-                                            connection.commit(err => {
-                                                if (err) {
-                                                    return connection.rollback(() => {
-                                                        connection.release();
-                                                        callback(err);
-                                                    });
-                                                }
-                                                connection.release();
-                                                callback(null, { message: 'User registered successfully' });
-                                            });
-                                        })
-                                        .catch(error => {
-                                            return connection.rollback(() => {
-                                                connection.release();
-                                                callback(error);
-                                            });
-                                        });
+                                  if (error) return reject(error);
+                                  resolve();
                                 }
-                            );
+                              );
+                            } else {
+                              console.error(`Role '${role}' not found in the database`);
+                              reject(new Error(`Role '${role}' not found`));
+                            }
+                          }
+                        );
+                      });
+                    });
+      
+                    Promise.allSettled(roleQueries)
+                      .then((results) => {
+                        const failedRoles = results.filter(result => result.status === 'rejected');
+      
+                        if (failedRoles.length > 0) {
+                          return connection.rollback(() => {
+                            connection.release();
+                            callback(new Error(`Failed to assign roles: ${failedRoles.map(result => result.reason.message).join(', ')}`));
+                          });
                         }
-                    );
-                });
-            });
-        },
-        
+      
+                        // Handle additional data based on roles
+                        const queries = [];
+      
+                        if (roles.includes('common')) {
+                          const customerData = [userId];
+                          queries.push(new Promise((resolve, reject) => {
+                            connection.query(
+                              `INSERT INTO customers (user_id) VALUES (?)`,
+                              customerData,
+                              (error, results) => {
+                                if (error) return reject(error);
+                                resolve();
+                              }
+                            );
+                          }));
+                        }
+      
+                        if (roles.includes('farmer')) {
+                          const farmerData = [
+                            userId,
+                            additionalData.homeAddress,
+                            additionalData.contactNumber,
+                            additionalData.nicNo,
+                            additionalData.nicImage
+                          ];
+                          queries.push(new Promise((resolve, reject) => {
+                            connection.query(
+                              `INSERT INTO farmers (user_id, home_address, contact_number, nic_no, nic_image) VALUES (?, ?, ?, ?, ?)`,
+                              farmerData,
+                              (error, results) => {
+                                if (error) return reject(error);
+                                resolve();
+                              }
+                            );
+                          }));
+                        }
+      
+                        if (roles.includes('seller')) {
+                          const sellerData = [
+                            userId,
+                            additionalData.shopName,
+                            additionalData.shopAddress,
+                            additionalData.shopRegNo,
+                            additionalData.typeOfGoods,
+                            additionalData.brImage
+                          ];
+                          queries.push(new Promise((resolve, reject) => {
+                            connection.query(
+                              `INSERT INTO sellers (user_id, shop_name, shop_address, shop_reg_no, type_of_goods, br_image) VALUES (?, ?, ?, ?, ?, ?)`,
+                              sellerData,
+                              (error, results) => {
+                                if (error) return reject(error);
+                                resolve();
+                              }
+                            );
+                          }));
+                        }
+      
+                        return Promise.all(queries);
+                      })
+                      .then(() => {
+                        connection.commit(err => {
+                          if (err) {
+                            return connection.rollback(() => {
+                              connection.release();
+                              callback(err);
+                            });
+                          }
+                          connection.release();
+                          callback(null, { message: 'User registered successfully' });
+                        });
+                      })
+                      .catch(error => {
+                        return connection.rollback(() => {
+                          connection.release();
+                          callback(error);
+                        });
+                      });
+                  }
+                );
+              }
+            );
+          });
+        });
+      },
+          
         getUsers: (callback) => {
             const query = `
                 SELECT u.id, u.name, u.email, u.password, 
